@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from datetime import datetime
 from typing import Dict
 from app.models import usuarios, ventas
@@ -6,19 +6,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
-from fastapi import Request
 
 app = FastAPI()
 
-# Habilitar CORS para permitir conexión desde el frontend
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # o ["*"] para permitir todo (no recomendado en producción)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Reglas de comisión
 REGLAS_COMISION = [
     (1000, 1.15),
     (800, 0.10),
@@ -32,6 +32,7 @@ def obtener_porcentaje_comision(total: float) -> float:
             return porcentaje
     return 0.0
 
+# ✅ PRIMERO: API REAL
 @app.get("/comision")
 def calcular_comisiones_por_vendedor(
     fecha_inicio: datetime = Query(...),
@@ -68,10 +69,10 @@ def calcular_comisiones_por_vendedor(
         "resultado": resultado
     }
 
-
+# ✅ SEGUNDO: servir frontend
 app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
 
-# Cualquier ruta no encontrada devuelve el index.html (para SPAs)
+# ✅ TERCERO: fallback SOLO si no existe una ruta previa
 @app.get("/{full_path:path}")
 async def serve_vue_app(request: Request):
     return FileResponse(os.path.join("app", "static", "index.html"))
