@@ -32,7 +32,7 @@ def obtener_porcentaje_comision(total: float) -> float:
             return porcentaje
     return 0.0
 
-# ✅ PRIMERO: API REAL
+
 @app.get("/comision")
 def calcular_comisiones_por_vendedor(
     fecha_inicio: datetime = Query(...),
@@ -69,10 +69,10 @@ def calcular_comisiones_por_vendedor(
         "resultado": resultado
     }
 
-# ✅ SEGUNDO: servir frontend
+
 app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
 
-# ✅ TERCERO: fallback SOLO si no existe una ruta previa
+
 @app.get("/{full_path:path}")
 async def serve_vue_app(request: Request):
     return FileResponse(os.path.join("app", "static", "index.html"))
